@@ -13,6 +13,7 @@ public static class JwtExtensions
     public static IServiceCollection AddJwtAuthServices(this IServiceCollection services)
     {
         services.AddHttpContextAccessor();
+        services.AddScoped<IProvedorDeUsuario, UserProvider>();
         services.AddSingleton<IEmissorDeTokens, JwtProvider>();
 
         services
