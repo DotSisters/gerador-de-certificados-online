@@ -5,4 +5,8 @@
     <Project Path="src/Dominio/GeradorDeCertificados.Dominio.csproj" />
     <Project Path="src/Infraestrutura/GeradorDeCertificados.Infraestrutura.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Testes.Integracao/Testes.Integracao.csproj" />
+    <Project Path="tests/Testes.Unidade/Testes.Unidade.csproj" />
+  </Folder>
 </Solution>
