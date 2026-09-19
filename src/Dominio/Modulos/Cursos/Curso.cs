@@ -45,10 +45,11 @@ public sealed class Curso : EntidadeBase<Curso>
             ));
         }
 
-        if (DataConclusao is null)
+        if (DataConclusao is null || DataConclusao.Value == default)
         {
-            erros.Add(new ErroValidacao(nameof(DataConclusao),
-            "A data de conclusão do curso é obrigatória."
+            erros.Add(new ErroValidacao(
+                nameof(DataConclusao),
+                "A data de conclusão do curso é obrigatória."
             ));
         }
 
