@@ -29,6 +29,17 @@ public sealed class GerarCertificadosConsumer(
             return;
         }
 
+        if (processamento.EstaFinalizado)
+        {
+            return;
+        }
+
+        if (processamento.Status == StatusProcessamento.Pendente)
+        {
+            processamento.IniciarGeracaoCertificados();
+            await repositorioProcessamento.SalvarAsync(processamento, context.CancellationToken);
+        }
+
         Curso? curso = await repositorioCurso.SelecionarPorIdAsync(
             context.Message.CursoId,
             context.CancellationToken
@@ -41,6 +52,9 @@ public sealed class GerarCertificadosConsumer(
                 context.Message.CursoId,
                 context.Message.ProcessamentoId
             );
+
+            processamento.RegistrarFalhaProcessamento();
+            await repositorioProcessamento.SalvarAsync(processamento, context.CancellationToken);
             return;
         }
 
@@ -73,7 +87,25 @@ public sealed class GerarCertificadosConsumer(
             }
         }
 
-        if (!processamento.TodosCertificadosProcessados || processamento.CaminhoZip is not null)
+        if (!processamento.TodosCertificadosProcessados)
+        {
+            return;
+        }
+
+        if (processamento.Gerados == 0)
+        {
+            processamento.RegistrarFalhaProcessamento();
+            await repositorioProcessamento.SalvarAsync(processamento, context.CancellationToken);
+            return;
+        }
+
+        if (processamento.Status == StatusProcessamento.GerandoCertificados)
+        {
+            processamento.IniciarGeracaoZip();
+            await repositorioProcessamento.SalvarAsync(processamento, context.CancellationToken);
+        }
+
+        if (processamento.CaminhoZip is not null)
         {
             return;
         }
@@ -82,21 +114,35 @@ public sealed class GerarCertificadosConsumer(
             .Where(c => c.StatusGeracao == StatusGeracao.Gerado && !string.IsNullOrWhiteSpace(c.CaminhoArquivo))
             .Select(c => c.CaminhoArquivo!)];
 
-        string caminhoZip = await certificadoStorage.CompactarAsync(
-            processamento.CursoId,
-            processamento.Id,
-            caminhosPdf,
-            context.CancellationToken
-        );
+        try
+        {
+            string caminhoZip = await certificadoStorage.CompactarAsync(
+                processamento.CursoId,
+                processamento.Id,
+                caminhosPdf,
+                context.CancellationToken
+            );
 
-        processamento.RegistrarZip(caminhoZip);
-        await repositorioProcessamento.SalvarAsync(processamento, context.CancellationToken);
+            processamento.RegistrarZip(caminhoZip);
+            await repositorioProcessamento.SalvarAsync(processamento, context.CancellationToken);
 
-        logger.LogInformation(
-            "Processamento {ProcessamentoId} concluído. Gerados: {Gerados}. Falhas: {Falhas}.",
-            processamento.Id,
-            processamento.Gerados,
-            processamento.Falhas
-        );
+            logger.LogInformation(
+                "Processamento {ProcessamentoId} concluído. Gerados: {Gerados}. Falhas: {Falhas}.",
+                processamento.Id,
+                processamento.Gerados,
+                processamento.Falhas
+            );
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Falha ao compactar os certificados do processamento {ProcessamentoId}.",
+                processamento.Id
+            );
+
+            processamento.RegistrarFalhaProcessamento();
+            await repositorioProcessamento.SalvarAsync(processamento, context.CancellationToken);
+        }
     }
 }

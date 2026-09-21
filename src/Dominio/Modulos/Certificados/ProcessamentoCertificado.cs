@@ -18,10 +18,11 @@ public sealed class ProcessamentoCertificado : EntidadeBase<ProcessamentoCertifi
     public bool TodosCertificadosProcessados =>
         certificados.Count > 0 && certificados.All(c => c.StatusGeracao != StatusGeracao.Pendente);
     public bool EstaFinalizado =>
-        Status is StatusProcessamento.Concluido
-            or StatusProcessamento.ConcluidoComFalhas
-            or StatusProcessamento.Falha;
-    public bool EstaEmAndamento => !EstaFinalizado;
+        Status is StatusProcessamento.Concluido or StatusProcessamento.Falha;
+    public bool EstaEmAndamento =>
+        Status is StatusProcessamento.Pendente
+            or StatusProcessamento.GerandoCertificados
+            or StatusProcessamento.GerandoZip;
 
     private ProcessamentoCertificado() { }
 
@@ -77,8 +78,53 @@ public sealed class ProcessamentoCertificado : EntidadeBase<ProcessamentoCertifi
         certificado.RegistrarFalha();
     }
 
+    public void IniciarGeracaoCertificados()
+    {
+        if (Status != StatusProcessamento.Pendente)
+        {
+            throw new InvalidOperationException(
+                "Só é possível iniciar a geração de certificados a partir do status Pendente."
+            );
+        }
+
+        Status = StatusProcessamento.GerandoCertificados;
+    }
+
+    public void IniciarGeracaoZip()
+    {
+        if (Status != StatusProcessamento.GerandoCertificados)
+        {
+            throw new InvalidOperationException(
+                "Só é possível iniciar a geração do ZIP a partir do status GerandoCertificados."
+            );
+        }
+
+        if (!TodosCertificadosProcessados)
+        {
+            throw new InvalidOperationException(
+                "Não é possível iniciar a geração do ZIP enquanto houver certificados pendentes."
+            );
+        }
+
+        if (Gerados == 0)
+        {
+            throw new InvalidOperationException(
+                "Não é possível iniciar a geração do ZIP sem pelo menos um certificado gerado."
+            );
+        }
+
+        Status = StatusProcessamento.GerandoZip;
+    }
+
     public void RegistrarZip(string caminhoZip)
     {
+        if (Status != StatusProcessamento.GerandoZip)
+        {
+            throw new InvalidOperationException(
+                "Só é possível registrar o ZIP a partir do status GerandoZip."
+            );
+        }
+
         if (!TodosCertificadosProcessados)
         {
             throw new InvalidOperationException(
@@ -95,9 +141,20 @@ public sealed class ProcessamentoCertificado : EntidadeBase<ProcessamentoCertifi
         }
 
         CaminhoZip = caminhoZip;
-        Status = Falhas > 0
-            ? StatusProcessamento.ConcluidoComFalhas
-            : StatusProcessamento.Concluido;
+        Status = StatusProcessamento.Concluido;
+        ConcluidoEm = DateTime.UtcNow;
+    }
+
+    public void RegistrarFalhaProcessamento()
+    {
+        if (EstaFinalizado)
+        {
+            throw new InvalidOperationException(
+                "Não é possível registrar falha em um processamento já finalizado."
+            );
+        }
+
+        Status = StatusProcessamento.Falha;
         ConcluidoEm = DateTime.UtcNow;
     }
 

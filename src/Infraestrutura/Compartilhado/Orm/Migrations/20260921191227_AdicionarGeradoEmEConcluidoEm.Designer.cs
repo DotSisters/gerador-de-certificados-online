@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace GeradorDeCertificados.Infraestrutura.Compartilhado.Orm.Migrations
 {
     [DbContext(typeof(GeradorDeCertificadosDbContext))]
-    [Migration("20260921191227_AlinharCertificadosAula")]
-    partial class AlinharCertificadosAula
+    [Migration("20260921191227_AdicionarGeradoEmEConcluidoEm")]
+    partial class AdicionarGeradoEmEConcluidoEm
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

@@ -71,7 +71,10 @@ public sealed class RepositorioProcessamentoCertificadoEmOrm
     )
     {
         return await registros.AnyAsync(
-            p => p.CursoId == cursoId && p.Status == StatusProcessamento.Pendente,
+            p => p.CursoId == cursoId
+                && (p.Status == StatusProcessamento.Pendente
+                    || p.Status == StatusProcessamento.GerandoCertificados
+                    || p.Status == StatusProcessamento.GerandoZip),
             cancellationToken
         );
     }
