@@ -2,7 +2,7 @@ using GeradorDeCertificados.Dominio.Modulos.Cursos;
 
 namespace GeradorDeCertificados.Dominio.Modulos.Certificados;
 
-public interface IGeradorPdfCertificado
+public interface ICertificadoPdfGenerator
 {
     Task<string> GerarAsync(
         Certificado certificado,

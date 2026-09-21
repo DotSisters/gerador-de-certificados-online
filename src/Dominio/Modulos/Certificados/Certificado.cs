@@ -7,8 +7,8 @@ public sealed class Certificado : EntidadeBase<Certificado>
     public Guid ProcessamentoId { get; private set; }
     public string NomeAluno { get; private set; } = string.Empty;
     public string? CaminhoArquivo { get; private set; }
-    public DateTime? DataGeracao { get; private set; }
-    public StatusCertificado Status { get; private set; }
+    public DateTime? GeradoEm { get; private set; }
+    public StatusGeracao StatusGeracao { get; private set; }
 
     private Certificado() { }
 
@@ -17,7 +17,7 @@ public sealed class Certificado : EntidadeBase<Certificado>
         Id = id;
         ProcessamentoId = processamentoId;
         NomeAluno = nomeAluno?.Trim() ?? string.Empty;
-        Status = StatusCertificado.Pendente;
+        StatusGeracao = StatusGeracao.Pendente;
     }
 
     public override IReadOnlyList<ErroValidacao> Validar()
@@ -46,19 +46,27 @@ public sealed class Certificado : EntidadeBase<Certificado>
     {
         NomeAluno = entidadeAtualizada.NomeAluno.Trim();
         CaminhoArquivo = entidadeAtualizada.CaminhoArquivo;
-        DataGeracao = entidadeAtualizada.DataGeracao;
-        Status = entidadeAtualizada.Status;
+        GeradoEm = entidadeAtualizada.GeradoEm;
+        StatusGeracao = entidadeAtualizada.StatusGeracao;
     }
 
-    public void MarcarComoGerado(string caminho, DateTime dataGeracao)
+    public void RegistrarGeracao(string caminhoArquivo)
     {
-        CaminhoArquivo = caminho;
-        DataGeracao = dataGeracao;
-        Status = StatusCertificado.Gerado;
+        if (string.IsNullOrWhiteSpace(caminhoArquivo))
+        {
+            throw new ArgumentException(
+                "O caminho do arquivo gerado é obrigatório.",
+                nameof(caminhoArquivo)
+            );
+        }
+
+        CaminhoArquivo = caminhoArquivo;
+        StatusGeracao = StatusGeracao.Gerado;
+        GeradoEm = DateTime.UtcNow;
     }
 
-    public void MarcarComoFalha()
+    public void RegistrarFalha()
     {
-        Status = StatusCertificado.Falha;
+        StatusGeracao = StatusGeracao.Falha;
     }
 }

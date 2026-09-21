@@ -10,12 +10,18 @@ public sealed class ProcessamentoCertificado : EntidadeBase<ProcessamentoCertifi
     public StatusProcessamento Status { get; private set; }
     public string? CaminhoZip { get; private set; }
     public DateTime DataSolicitacao { get; private set; }
+    public DateTime? ConcluidoEm { get; private set; }
     public IReadOnlyCollection<Certificado> Certificados => certificados;
 
-    public bool EstaEmAndamento =>
-        Status is StatusProcessamento.Pendente
-            or StatusProcessamento.GerandoCertificados
-            or StatusProcessamento.GerandoZip;
+    public int Gerados => certificados.Count(c => c.StatusGeracao == StatusGeracao.Gerado);
+    public int Falhas => certificados.Count(c => c.StatusGeracao == StatusGeracao.Falha);
+    public bool TodosCertificadosProcessados =>
+        certificados.Count > 0 && certificados.All(c => c.StatusGeracao != StatusGeracao.Pendente);
+    public bool EstaFinalizado =>
+        Status is StatusProcessamento.Concluido
+            or StatusProcessamento.ConcluidoComFalhas
+            or StatusProcessamento.Falha;
+    public bool EstaEmAndamento => !EstaFinalizado;
 
     private ProcessamentoCertificado() { }
 
@@ -56,26 +62,49 @@ public sealed class ProcessamentoCertificado : EntidadeBase<ProcessamentoCertifi
     {
         Status = entidadeAtualizada.Status;
         CaminhoZip = entidadeAtualizada.CaminhoZip;
+        ConcluidoEm = entidadeAtualizada.ConcluidoEm;
     }
 
-    public void MarcarComoGerandoCertificados()
+    public void RegistrarSucesso(Guid certificadoId, string caminhoArquivo)
     {
-        Status = StatusProcessamento.GerandoCertificados;
+        Certificado certificado = EncontrarPendente(certificadoId);
+        certificado.RegistrarGeracao(caminhoArquivo);
     }
 
-    public void MarcarComoGerandoZip()
+    public void RegistrarFalha(Guid certificadoId)
     {
-        Status = StatusProcessamento.GerandoZip;
+        Certificado certificado = EncontrarPendente(certificadoId);
+        certificado.RegistrarFalha();
     }
 
-    public void MarcarComoConcluido(string caminhoZip)
+    public void RegistrarZip(string caminhoZip)
     {
+        if (!TodosCertificadosProcessados)
+        {
+            throw new InvalidOperationException(
+                "Não é possível registrar o ZIP enquanto houver certificados pendentes."
+            );
+        }
+
+        if (string.IsNullOrWhiteSpace(caminhoZip))
+        {
+            throw new ArgumentException(
+                "O caminho do arquivo ZIP é obrigatório.",
+                nameof(caminhoZip)
+            );
+        }
+
         CaminhoZip = caminhoZip;
-        Status = StatusProcessamento.Concluido;
+        Status = Falhas > 0
+            ? StatusProcessamento.ConcluidoComFalhas
+            : StatusProcessamento.Concluido;
+        ConcluidoEm = DateTime.UtcNow;
     }
 
-    public void MarcarComoFalha()
+    private Certificado EncontrarPendente(Guid certificadoId)
     {
-        Status = StatusProcessamento.Falha;
+        return certificados.Single(c =>
+            c.Id == certificadoId && c.StatusGeracao == StatusGeracao.Pendente
+        );
     }
 }

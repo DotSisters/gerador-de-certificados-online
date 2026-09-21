@@ -1,10 +1,13 @@
 namespace GeradorDeCertificados.Dominio.Modulos.Certificados;
 
-public interface ICompactadorDeArquivosZip
+public interface ICertificadoStorage
 {
     Task<string> CompactarAsync(
-        IReadOnlyList<Certificado> certificados,
+        Guid cursoId,
         Guid processamentoId,
+        IReadOnlyList<string> caminhosPdf,
         CancellationToken cancellationToken
     );
+
+    Stream AbrirLeitura(string caminho);
 }
