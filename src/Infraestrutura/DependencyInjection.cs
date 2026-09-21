@@ -23,6 +23,12 @@ public static class DependencyInjection
         services.AddScoped<IRepositorioCurso, RepositorioCursoEmOrm>();
         services.AddScoped<IRepositorioCertificado, RepositorioCertificadoEmOrm>();
         services.AddScoped<IRepositorioProcessamentoCertificado, RepositorioProcessamentoCertificadoEmOrm>();
+        services.AddScoped<ICertificadoPdfGenerator, CertificadoPdfGenerator>();
+        services.AddScoped<ICertificadoStorage, FileSystemCertificadoStorage>();
+
+        services.Configure<CertificadosArquivosOptions>(
+            configuration.GetSection(CertificadosArquivosOptions.SectionName)
+        );
 
         services.AddIdentityCore<IdentityUser<Guid>>(options =>
         {
