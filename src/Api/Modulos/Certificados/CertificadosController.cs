@@ -82,32 +82,30 @@ public sealed class CertificadosController(
                 certificado.Id,
                 certificado.NomeAluno,
                 certificado.Status,
-                certificado.DataGeracao
+                certificado.GeradoEm
             )
         )];
 
         return Ok(certificados);
     }
 
-    [HttpGet("certificados/download")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [HttpGet("certificados/download", Name = "DownloadCertificadosZip")]
+    [ProducesResponseType(typeof(FileStreamResult), StatusCodes.Status200OK, "application/zip")]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Download(
         Guid cursoId,
         CancellationToken cancellationToken
     )
     {
         var resultado = await mediator.Send(
-            new ObterArquivoZipQuery(cursoId),
+            new ObterArquivoCertificadosQuery(cursoId),
             cancellationToken
         );
 
         if (resultado.IsFailed)
             return this.ProblemDetails(resultado);
 
-        return PhysicalFile(
-            resultado.Value.Caminho,
-            "application/zip",
-            resultado.Value.NomeArquivo
-        );
+        return File(resultado.Value.Conteudo, resultado.Value.ContentType, resultado.Value.Name);
     }
 }

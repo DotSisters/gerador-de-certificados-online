@@ -31,7 +31,7 @@ public sealed class ObterStatusProcessamentoQueryHandler(
         }
 
         ProcessamentoCertificado? processamento =
-            await repositorioProcessamento.SelecionarMaisRecentePorCursoIdAsync(
+            await repositorioProcessamento.SelecionarPorCursoAsync(
                 query.CursoId,
                 cancellationToken
             );

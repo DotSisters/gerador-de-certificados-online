@@ -79,8 +79,8 @@ public sealed class SolicitarGeracaoCertificadosCommandHandler(
             [.. processamento.Certificados.Select(certificado => new CertificadoDto(
                 certificado.Id,
                 certificado.NomeAluno,
-                certificado.Status,
-                certificado.DataGeracao,
+                certificado.StatusGeracao,
+                certificado.GeradoEm,
                 certificado.CaminhoArquivo
             ))]
         );

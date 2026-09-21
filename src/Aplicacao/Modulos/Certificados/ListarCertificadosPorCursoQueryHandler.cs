@@ -30,7 +30,7 @@ public sealed class ListarCertificadosPorCursoQueryHandler(
         }
 
         ProcessamentoCertificado? processamento =
-            await repositorioProcessamento.SelecionarPorCursoIdAsync(
+            await repositorioProcessamento.SelecionarPorCursoAsync(
                 query.CursoId,
                 cancellationToken
             );
@@ -44,8 +44,8 @@ public sealed class ListarCertificadosPorCursoQueryHandler(
             certificado => new CertificadoDto(
                 certificado.Id,
                 certificado.NomeAluno,
-                certificado.Status,
-                certificado.DataGeracao,
+                certificado.StatusGeracao,
+                certificado.GeradoEm,
                 certificado.CaminhoArquivo
             )
         )];

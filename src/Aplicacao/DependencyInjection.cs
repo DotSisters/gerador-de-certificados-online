@@ -1,4 +1,4 @@
-// using GeradorDeCertificados.Aplicacao.Modulos.Certificados.Mensageria;
+using GeradorDeCertificados.Aplicacao.Modulos.Certificados.Mensageria;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,31 +24,20 @@ public static class DependencyInjection
         {
             config.SetKebabCaseEndpointNameFormatter();
 
-            // Configura a injeção dos Consumers
-            // config.AddConsumer<GerarCertificadosConsumer>();
-            // config.AddConsumer<GerarZipConsumer>();
+            config.AddConsumer<GerarCertificadosConsumer>();
 
             config.UsingRabbitMq((context, rabbitMq) =>
             {
                 rabbitMq.Host(new Uri(rabbitMqConnectionString));
 
-                // rabbitMq.ReceiveEndpoint("certificados-solicitados", endpoint =>
-                // {
-                //     endpoint.PrefetchCount = 4; // Quantas mensagens o RabbitMQ deve carregar adiantado
-                //     endpoint.ConcurrentMessageLimit = 2; // Quantos consumers serão instanciados em paralelo
-                //     endpoint.UseMessageRetry(DefaultMessageRetryIntervals); // Quantas re-tentativas serão feitas e o intervalo entre elas
-                //
-                //     endpoint.ConfigureConsumer<GerarCertificadosConsumer>(context);
-                // });
+                rabbitMq.ReceiveEndpoint("certificados-solicitados", endpoint =>
+                {
+                    endpoint.PrefetchCount = 4;
+                    endpoint.ConcurrentMessageLimit = 2;
+                    endpoint.UseMessageRetry(DefaultMessageRetryIntervals);
 
-                // rabbitMq.ReceiveEndpoint("certificados-zip", endpoint =>
-                // {
-                //     endpoint.PrefetchCount = 4;
-                //     endpoint.ConcurrentMessageLimit = 2;
-                //     endpoint.UseMessageRetry(DefaultMessageRetryIntervals);
-                //
-                //     endpoint.ConfigureConsumer<GerarZipConsumer>(context);
-                // });
+                    endpoint.ConfigureConsumer<GerarCertificadosConsumer>(context);
+                });
             });
         });
 

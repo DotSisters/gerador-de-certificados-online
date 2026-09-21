@@ -22,6 +22,6 @@ public sealed record StatusProcessamentoResponse(
 public sealed record CertificadoResponse(
     Guid Id,
     string NomeAluno,
-    StatusCertificado Status,
-    DateTime? DataGeracao
+    StatusGeracao Status,
+    DateTime? GeradoEm
 );
