@@ -20,7 +20,7 @@ public sealed class RepositorioCertificadoEmOrm : RepositorioBaseEmOrm<Certifica
     {
         Guid? processamentoId = await contexto.Set<ProcessamentoCertificado>()
             .Where(p => p.CursoId == cursoId)
-            .OrderByDescending(p => p.DataSolicitacao)
+            .OrderByDescending(p => p.Id)
             .Select(p => (Guid?)p.Id)
             .FirstOrDefaultAsync(cancellationToken);
 

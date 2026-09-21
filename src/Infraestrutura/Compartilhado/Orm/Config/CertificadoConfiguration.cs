@@ -24,10 +24,11 @@ public sealed class CertificadoConfiguration : IEntityTypeConfiguration<Certific
             .HasMaxLength(500)
             .IsRequired(false);
 
-        builder.Property(c => c.DataGeracao)
+        builder.Property(c => c.GeradoEm)
             .IsRequired(false);
 
-        builder.Property(c => c.Status)
+        builder.Property(c => c.StatusGeracao)
+            .HasColumnName("Status")
             .IsRequired();
     }
 }

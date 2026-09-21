@@ -33,6 +33,9 @@ public sealed class ProcessamentoCertificadoConfiguration
         builder.Property(p => p.DataSolicitacao)
             .IsRequired();
 
+        builder.Property(p => p.ConcluidoEm)
+            .IsRequired(false);
+
         builder.HasMany(p => p.Certificados)
             .WithOne()
             .HasForeignKey(c => c.ProcessamentoId)
@@ -42,6 +45,10 @@ public sealed class ProcessamentoCertificadoConfiguration
             .HasField("certificados")
             .UsePropertyAccessMode(PropertyAccessMode.Field);
 
+        builder.Ignore(p => p.Gerados);
+        builder.Ignore(p => p.Falhas);
+        builder.Ignore(p => p.TodosCertificadosProcessados);
+        builder.Ignore(p => p.EstaFinalizado);
         builder.Ignore(p => p.EstaEmAndamento);
     }
 }
