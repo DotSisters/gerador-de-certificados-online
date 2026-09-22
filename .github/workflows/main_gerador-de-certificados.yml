@@ -60,7 +60,7 @@ jobs:
 
       - name: Apply ORM migrations to AzureSQL
         env:
-          POSTGRES_CONNECTION_STRING: ${{ secrets.POSTGRES_CONNECTION_STRING }}
+          POSTGRES_CONNECTION_STRING: ${{ secrets.POSTGRES_CONNECTIONSTRING }}
           NewRelic__LicenseKey: ${{ secrets.NEWRELIC_LICENSE_KEY }}
         run: |
           dotnet ef database update `
