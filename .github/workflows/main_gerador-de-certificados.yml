@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-and-test:
     runs-on: windows-latest
     permissions:
       contents: read #This is required for actions/checkout
@@ -21,10 +21,20 @@ jobs:
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.x'
+          dotnet-version: "10.x"
 
       - name: Build with dotnet
         run: dotnet build --configuration Release
+
+      - name: Run unit and integration tests
+        run: |
+          dotnet test tests/Testes.Unidade/Testes.Unidade.csproj `
+            --configuration Release `
+            --no-build
+
+          dotnet test tests/Testes.Integracao/Testes.Integracao.csproj `
+            --configuration Release `
+            --no-build
 
       - name: dotnet publish
         run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
@@ -37,7 +47,7 @@ jobs:
 
   migrate:
     runs-on: windows-latest
-    needs: build
+    needs: build-and-test
     permissions:
       contents: read #This is required for actions/checkout
 
@@ -71,7 +81,7 @@ jobs:
 
   deploy:
     runs-on: windows-latest
-    needs: [build, migrate] 
+    needs: [build-and-test, migrate]
     permissions:
       id-token: write #This is required for requesting the JWT
       contents: read #This is required for actions/checkout
@@ -81,7 +91,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: .net-app
-      
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -106,7 +116,6 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'gerador-de-certificados'
-          slot-name: 'Production'
+          app-name: "gerador-de-certificados"
+          slot-name: "Production"
           package: .
-          
