@@ -60,14 +60,14 @@ jobs:
 
       - name: Apply ORM migrations to AzureSQL
         env:
-          POSTGRES_CONNECTION_STRING: ${{ secrets.POSTGRES_CONNECTIONSTRING }}
+          SQLSERVER_CONNECTION_STRING: ${{ secrets.SQLSERVER_CONNECTIONSTRING }}
           NewRelic__LicenseKey: ${{ secrets.NEWRELIC_LICENSE_KEY }}
         run: |
           dotnet ef database update `
             --project src/Infraestrutura/GeradorDeCertificados.Infraestrutura.csproj `
             --startup-project src/Api/GeradorDeCertificados.WebApi.csproj `
             --configuration Release `
-            --connection "$env:POSTGRES_CONNECTION_STRING"
+            --connection "$env:SQLSERVER_CONNECTION_STRING"
 
   deploy:
     runs-on: windows-latest
@@ -96,7 +96,7 @@ jobs:
             --resource-group "gerador-de-certificados" `
             --name "gerador-de-certificados" `
             --settings `
-              "ConnectionStrings__PostgresEF=${{ secrets.POSTGRES_CONNECTIONSTRING }}" `
+              "ConnectionStrings__SqlServer=${{ secrets.SQLSERVER_CONNECTIONSTRING }}" `
               "ConnectionStrings__RabbitMq=${{ secrets.RABBITMQ_CONNECTIONSTRING }}" `
               "Jwt__SigningKey=${{ secrets.JWT_SIGNING_KEY }}" `
               "NewRelic__LicenseKey=${{ secrets.NEWRELIC_LICENSE_KEY }}" `

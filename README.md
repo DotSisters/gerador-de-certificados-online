@@ -182,7 +182,15 @@ Os testes de integração abrangem:
    dotnet restore
    ```
 
-4. Execute a aplicação:
+4. Aplique a migration:
+
+   ```bash
+   dotnet ef database update \
+     --project src/Infraestrutura/GeradorDeCertificados.Infraestrutura.csproj \
+     --startup-project src/Api/GeradorDeCertificados.WebApi.csproj
+   ```
+
+5. Execute a aplicação:
 
    ```bash
    dotnet run
