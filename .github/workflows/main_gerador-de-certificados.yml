@@ -108,7 +108,7 @@ jobs:
             --settings `
               "ConnectionStrings__SqlServer=${{ secrets.SQLSERVER_CONNECTIONSTRING }}" `
               "ConnectionStrings__RabbitMq=${{ secrets.RABBITMQ_CONNECTIONSTRING }}" `
-              "Jwt__SigningKey=${{ secrets.JWT_SIGNING_KEY }}" `
+              "Jwt__Key=${{ secrets.JWT_SIGNING_KEY }}" `
               "NewRelic__LicenseKey=${{ secrets.NEWRELIC_LICENSE_KEY }}" `
               "LuckyPenny__LicenseKey=${{ secrets.LUCKYPENNY_LICENSE_KEY }}"
 
