@@ -104,9 +104,10 @@ if (app.Environment.IsDevelopment())
 
     dbContext.Database.Migrate();
 
-    app.UseSwagger();
-    app.UseSwaggerUI();
 }
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseExceptionHandler();
 app.UseStatusCodePages();
