@@ -35,6 +35,37 @@ jobs:
           name: .net-app
           path: ${{env.DOTNET_ROOT}}/myapp
 
+  migrate:
+    runs-on: windows-latest
+    needs: build
+    permissions:
+      contents: read #This is required for actions/checkout
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.x"
+
+      - name: Restore dependencies
+        run: dotnet restore src/Api/GeradorDeCertificados.WebApi.csproj
+
+      - name: Install Entity Framework CLI
+        run: dotnet tool install --global dotnet-ef
+
+      - name: Apply ORM migrations to AzureSQL
+        env:
+          POSTGRES_CONNECTION_STRING: ${{ secrets.POSTGRES_CONNECTION_STRING }}
+          NewRelic__LicenseKey: ${{ secrets.NEWRELIC_LICENSE_KEY }}
+        run: |
+          dotnet ef database update `
+            --project src/Infraestrutura/GeradorDeCertificados.Infraestrutura.csproj `
+            --startup-project src/Api/GeradorDeCertificados.WebAppApi.csproj `
+            --configuration Release `
+            --connection "$env:POSTGRES_CONNECTION_STRING"
+
   deploy:
     runs-on: windows-latest
     needs: build
@@ -54,6 +85,19 @@ jobs:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_BAEEC507BA57448BA6222F77CECF05EB }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_AF0AB902F43748BDBC40001580F4EAE7 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_6E63B27A0850401DA5BFDDCFBEB17D97 }}
+
+      - name: Configure Azure Web App settings
+        shell: pwsh
+        run: |
+          az webapp config appsettings set `
+            --resource-group "gerador-de-certificados" `
+            --name "gerador-de-certificados" `
+            --settings `
+              "ConnectionStrings__PostgresEF=${{ secrets.POSTGRES_CONNECTIONSTRING }}" `
+              "ConnectionStrings__RabbitMq=${{ secrets.RABBITMQ_CONNECTIONSTRING }}" `
+              "Jwt__SigningKey=${{ secrets.JWT_SIGNING_KEY }}" `
+              "NewRelic__LicenseKey=${{ secrets.NEWRELIC_LICENSE_KEY }}" `
+              "LuckyPenny__LicenseKey=${{ secrets.LUCKYPENNY_LICENSE_KEY }}"
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
