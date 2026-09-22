@@ -62,7 +62,7 @@ jobs:
         run: |
           dotnet ef database update `
             --project src/Infraestrutura/GeradorDeCertificados.Infraestrutura.csproj `
-            --startup-project src/Api/GeradorDeCertificados.WebAppApi.csproj `
+            --startup-project src/Api/GeradorDeCertificados.WebApi.csproj `
             --configuration Release `
             --connection "$env:POSTGRES_CONNECTION_STRING"
 
