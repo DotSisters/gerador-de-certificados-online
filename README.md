@@ -6,9 +6,9 @@
 
 * O processamento dos certificados ocorre de forma assíncrona, garantindo melhor desempenho e escalabilidade da aplicação.
 
-<!-- <p align="center">
-./.docs/home.gif
-</p> -->
+<p align="center">
+<img src="./.docs/home.gif">
+</p>
 
 ## Funcionalidades
 
